@@ -2,9 +2,6 @@ library 'pipeline-library'
 pipeline {
   agent none
   options { timeout(time: 10, unit: 'MINUTES') }
-  triggers {
-    eventTrigger jmespathQuery("controller.action=='provision'")
-  }
   stages {
     stage('Provision Managed Controller') {
       agent {
