@@ -28,8 +28,8 @@ pipeline {
             mkdir -p ${BUNDLE_ID}
             mkdir -p checkout
             git clone https://github.com/${GITHUB_ORG}/${GITHUB_REPO}.git checkout
-            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" controller.yaml
-            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" bundle/bundle.yaml
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/controller.yaml
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/bundle/bundle.yaml
           '''
           dir('checkout/bundle') {
             sh "cp --parents `find -name \\*.yaml*` ../../${BUNDLE_ID}/"
@@ -46,7 +46,7 @@ pipeline {
             
           curl --user "$ADMIN_CLI_TOKEN_USR:$ADMIN_CLI_TOKEN_PSW" -XPOST \
             http://cjoc/cjoc/casc-items/create-items?path=/cloudbees-ci-previews-demo \
-            --data-binary @./controller.yaml -H 'Content-Type:text/yaml'
+            --data-binary @./checkout/controller.yaml -H 'Content-Type:text/yaml'
         '''
       }
     }
