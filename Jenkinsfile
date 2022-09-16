@@ -21,10 +21,6 @@ pipeline {
         BUNDLE_ID = "${GITHUB_ORG_LOWER}-${GITHUB_REPO}"
       }
       steps {
-        sh '''
-          sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" controller.yaml
-          sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" bundle/bundle.yaml
-        '''
         container("kubectl") {
           sh '''
             rm -rf ./${BUNDLE_ID} || true
@@ -32,6 +28,8 @@ pipeline {
             mkdir -p ${BUNDLE_ID}
             mkdir -p checkout
             git clone https://github.com/${GITHUB_ORG}/${GITHUB_REPO}.git checkout
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" controller.yaml
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" bundle/bundle.yaml
           '''
           dir('checkout/bundle') {
             sh "cp --parents `find -name \\*.yaml*` ../../${BUNDLE_ID}/"
