@@ -17,6 +17,7 @@ pipeline {
         ADMIN_CLI_TOKEN = credentials('admin-cli-token')
         GITHUB_ORG = event.organization.login.toString().replaceAll(" ", "-")
         GITHUB_REPO = event.repository.name.toString()
+        BUNDLE_ID = GITHUB_ORG.toLowerCase() + "-$GITHUB_REPO"
       }
       steps {
         container("kubectl") {
