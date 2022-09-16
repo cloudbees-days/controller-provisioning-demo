@@ -20,6 +20,10 @@ pipeline {
         BUNDLE_ID = GITHUB_ORG.toLowerCase() + "-$GITHUB_REPO"
       }
       steps {
+        sh '''
+          sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" controller.yaml
+          sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" bundle/bundle.yaml
+        '''
         container("kubectl") {
           sh '''
             rm -rf ./${BUNDLE_ID} || true
