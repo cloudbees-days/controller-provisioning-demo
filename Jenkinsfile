@@ -1,3 +1,4 @@
+def event = currentBuild.getBuildCauses()[0].event
 library 'pipeline-library'
 pipeline {
   agent none
@@ -14,9 +15,10 @@ pipeline {
       }
       environment {
         ADMIN_CLI_TOKEN = credentials('admin-cli-token')
+        GITHUB_ORG = event.organization.login.toString().replaceAll(" ", "-")
+        GITHUB_REPO = event.repository.name.toString()
       }
       steps {
-        gitHubParseOriginUrl()
         container("kubectl") {
           sh '''
             rm -rf ./${BUNDLE_ID} || true
@@ -39,7 +41,7 @@ pipeline {
             http://cjoc/cjoc/load-casc-bundles/checkout
             
           curl --user "$ADMIN_CLI_TOKEN_USR:$ADMIN_CLI_TOKEN_PSW" -XPOST \
-            http://cjoc/cjoc/casc-items/create-items?path=/staging-cloudbees-ci-casc-workshop \
+            http://cjoc/cjoc/casc-items/create-items?path=/cloudbees-ci-previews-demo \
             --data-binary @./controller.yaml -H 'Content-Type:text/yaml'
         '''
       }
