@@ -2,6 +2,9 @@ library 'pipeline-library'
 pipeline {
   agent none
   options { timeout(time: 10, unit: 'MINUTES') }
+  triggers {
+    eventTrigger jmespathQuery("ref=='refs/heads/main' && commits[0].modified[?contains(@, 'controller.yaml')]")
+  } 
   stages {
     stage('Provision Managed Controller') {
       agent {
