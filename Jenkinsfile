@@ -28,6 +28,9 @@ pipeline {
           sh '''
             rm -rf ./${BUNDLE_ID} || true
             mkdir -p ${BUNDLE_ID}
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/controller.yaml
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/bundle/bundle.yaml
+            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/bundle/variables.yaml
           '''
           dir('checkout/bundle') {
             sh "cp --parents `find -name \\*.yaml*` ../../${BUNDLE_ID}/"
