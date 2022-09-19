@@ -6,6 +6,21 @@ pipeline {
     skipDefaultCheckout true
   }
   stages {
+    stage ('Fix Changelog') {
+      // only do this if there is no prior build
+      when { expression { return !currentBuild.previousBuild } }
+      steps {
+        checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            userRemoteConfigs: scm.userRemoteConfigs,
+            browser: scm.browser,
+            // this extension builds the changesets from the compareTarget branch
+            // Using a variable here, but do what's appropriate for your env
+            extensions: [[$class: 'ChangelogToBranch', options: [compareRemote: 'origin', compareTarget: 'main']]]
+        ])
+      }
+    }
     stage('Provision Managed Controller') {
       agent {
         kubernetes {
@@ -18,7 +33,6 @@ pipeline {
       when {
         branch 'main'
         anyOf {
-          expression { BUILD_NUMBER == "1" }
           changeset "controller.yaml"
         }
       }
