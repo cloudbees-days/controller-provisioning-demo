@@ -48,7 +48,7 @@ pipeline {
             
           curl --user "$ADMIN_CLI_TOKEN_USR:$ADMIN_CLI_TOKEN_PSW" -XPOST \
             -H "Accept: application/json" \
-            http://cjoc/cjoc/casc-items/create-items?path=/controllers \
+            http://cjoc/cjoc/casc-items/create-items?path=/cloudbees-ci-previews-demo \
             --data-binary @./checkout/controller.yaml -H 'Content-Type:text/yaml'
         '''
       }
