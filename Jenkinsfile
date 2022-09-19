@@ -21,6 +21,13 @@ pipeline {
         ])
       }
     }
+    stage("Checkout") {
+      steps {
+        dir('checkout') {
+          checkout scm
+        }
+      }
+    } 
     stage('Provision Managed Controller') {
       agent {
         kubernetes {
@@ -38,14 +45,11 @@ pipeline {
       }
       steps {
         container("kubectl") {
+          gitHubParseOriginUrl()
           sh '''
             rm -rf ./checkout || true
             mkdir -p checkout
           '''
-          dir('checkout') {
-            checkout scm
-            gitHubParseOriginUrl()
-          }
           sh '''
             rm -rf ./${BUNDLE_ID} || true
             mkdir -p ${BUNDLE_ID}
