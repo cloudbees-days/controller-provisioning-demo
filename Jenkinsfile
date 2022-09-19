@@ -1,11 +1,10 @@
-def event = currentBuild.getBuildCauses()[0].event
 library 'pipeline-library'
 pipeline {
   agent none
-  options { timeout(time: 10, unit: 'MINUTES') }
-  triggers {
-    eventTrigger jmespathQuery("ref=='refs/heads/main' && commits[0].added[?contains(@, 'controller.yaml')]")
-  } 
+  options { 
+    timeout(time: 10, unit: 'MINUTES')
+    skipDefaultCheckout true
+  }
   stages {
     stage('Provision Managed Controller') {
       agent {
@@ -15,21 +14,20 @@ pipeline {
       }
       environment {
         ADMIN_CLI_TOKEN = credentials('admin-cli-token')
-        GITHUB_ORG = event.organization.login.toString().replaceAll(" ", "-")
-        GITHUB_ORG_LOWER = GITHUB_ORG.toLowerCase()
-        GITHUB_REPO = event.repository.name.toString()
-        BUNDLE_ID = "${GITHUB_ORG_LOWER}-${GITHUB_REPO}"
       }
       steps {
         container("kubectl") {
           sh '''
-            rm -rf ./${BUNDLE_ID} || true
             rm -rf ./checkout || true
-            mkdir -p ${BUNDLE_ID}
             mkdir -p checkout
-            git clone https://github.com/${GITHUB_ORG}/${GITHUB_REPO}.git checkout
-            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/controller.yaml
-            sed -i "s/REPLACE_REPO/$GITHUB_REPO/g" checkout/bundle/bundle.yaml
+          '''
+          dir('checkout') {
+            checkout scm
+            gitHubParseOriginUrl()
+          }
+          sh '''
+            rm -rf ./${BUNDLE_ID} || true
+            mkdir -p ${BUNDLE_ID}
           '''
           dir('checkout/bundle') {
             sh "cp --parents `find -name \\*.yaml*` ../../${BUNDLE_ID}/"
@@ -42,12 +40,10 @@ pipeline {
         
         sh '''
           curl --user "$ADMIN_CLI_TOKEN_USR:$ADMIN_CLI_TOKEN_PSW" -XPOST \
-            -H "Accept: application/json" \
             http://cjoc/cjoc/load-casc-bundles/checkout
             
           curl --user "$ADMIN_CLI_TOKEN_USR:$ADMIN_CLI_TOKEN_PSW" -XPOST \
-            -H "Accept: application/json" \
-            http://cjoc/cjoc/casc-items/create-items?path=/cloudbees-ci-previews-demo \
+            http://cjoc/cjoc/casc-items/create-items?path=/controllers \
             --data-binary @./checkout/controller.yaml -H 'Content-Type:text/yaml'
         '''
       }
