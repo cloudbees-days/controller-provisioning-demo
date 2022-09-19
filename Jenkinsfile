@@ -27,6 +27,10 @@ pipeline {
     }
     stage("Checkout") {
       steps {
+        sh '''
+          rm -rf ./checkout || true
+          mkdir -p checkout
+        '''
         dir('checkout') {
           checkout scm
           gitHubParseOriginUrl()
@@ -45,10 +49,6 @@ pipeline {
       }
       steps {
         container("kubectl") {
-          sh '''
-            rm -rf ./checkout || true
-            mkdir -p checkout
-          '''
           sh '''
             rm -rf ./${BUNDLE_ID} || true
             mkdir -p ${BUNDLE_ID}
