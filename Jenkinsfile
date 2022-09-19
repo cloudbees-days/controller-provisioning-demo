@@ -15,6 +15,13 @@ pipeline {
       environment {
         ADMIN_CLI_TOKEN = credentials('admin-cli-token')
       }
+      when {
+        branch 'main'
+        anyOf {
+          expression { BUILD_NUMBER == "1" }
+          changeset "controller.yaml"
+        }
+      }
       steps {
         container("kubectl") {
           sh '''
