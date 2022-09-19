@@ -1,6 +1,10 @@
 library 'pipeline-library'
 pipeline {
-  agent none
+  agent {
+    kubernetes {
+      yaml libraryResource ('podtemplates/kubectl.yml')
+    }
+  }
   options { 
     timeout(time: 10, unit: 'MINUTES')
     skipDefaultCheckout true
@@ -25,15 +29,11 @@ pipeline {
       steps {
         dir('checkout') {
           checkout scm
+          gitHubParseOriginUrl()
         }
       }
     } 
     stage('Provision Managed Controller') {
-      agent {
-        kubernetes {
-          yaml libraryResource ('podtemplates/kubectl.yml')
-        }
-      }
       environment {
         ADMIN_CLI_TOKEN = credentials('admin-cli-token')
       }
@@ -45,7 +45,6 @@ pipeline {
       }
       steps {
         container("kubectl") {
-          gitHubParseOriginUrl()
           sh '''
             rm -rf ./checkout || true
             mkdir -p checkout
